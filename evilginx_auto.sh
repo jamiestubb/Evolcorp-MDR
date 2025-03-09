@@ -100,8 +100,9 @@ expect <<EOF | tee -a "$LOG_FILE"
     send "lures get-url 0\r"
     expect "evilginx2 >"
     send "config\r"
-    expect eof
+    interact  # Keep Evilginx open and allow user interaction
 EOF
+
 
 log_message "[+] Evilginx setup completed successfully inside tmux!"
 log_message "[+] You are now inside tmux. Type 'exit' when you're done."
