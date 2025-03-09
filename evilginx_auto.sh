@@ -105,7 +105,8 @@ EOF
 
 
 log_message "[+] Evilginx setup completed successfully inside tmux!"
-log_message "[+] You are now inside tmux. Type 'exit' when you're done."
+log_message "[+] You are now inside tmux. Evilginx will start automatically."
 
-# **Keep tmux open**
-# exec bash
+# Start Evilginx again manually
+./evilginx2
+
