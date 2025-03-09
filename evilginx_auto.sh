@@ -27,9 +27,8 @@ fi
 # **Start tmux session if not already inside one**
 if [[ -z "$TMUX" ]]; then
     log_message "[+] Starting tmux session..."
-    tmux new-session -s evilginx -d "$0" # Start in detached mode
-    tmux attach -t evilginx  # Attach to the session
-    exit  # Exit the script here after attaching to tmux
+    tmux new-session -s evilginx "$0"  # Run this script inside a new tmux session
+    exit  # Exit shell so user gets into tmux
 fi
 
 # **Inside tmux session now - Proceed with script**
