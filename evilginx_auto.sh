@@ -24,14 +24,14 @@ else
     log_message "[+] 'tmux' is already installed."
 fi
 
-# **Start tmux session interactively**
+# **If not already inside a tmux session, start one and re-run the script inside it**
 if [[ -z "$TMUX" ]]; then
-    log_message "[+] Starting tmux session..."
-    tmux new-session -s evilginx bash  # Start an interactive shell in tmux
-    exit  # Exit current shell so user gets placed inside tmux
+    log_message "[+] Starting tmux session and running script inside it..."
+    tmux new-session -s evilginx "/bin/bash $0"
+    exit  # Exit parent shell, tmux session takes over
 fi
 
-# **Inside tmux session now - Proceed with script**
+# **Inside tmux session now - Proceed with script execution**
 log_message "[+] Running inside tmux session: evilginx"
 
 # Get user input
