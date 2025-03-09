@@ -24,11 +24,11 @@ else
     log_message "[+] 'tmux' is already installed."
 fi
 
-# **Start tmux session if not already inside one**
+# **Start tmux session interactively**
 if [[ -z "$TMUX" ]]; then
     log_message "[+] Starting tmux session..."
-    tmux new-session -s evilginx "$0"  # Run this script inside a new tmux session
-    exit  # Exit shell so user gets into tmux
+    tmux new-session -s evilginx bash  # Start an interactive shell in tmux
+    exit  # Exit current shell so user gets placed inside tmux
 fi
 
 # **Inside tmux session now - Proceed with script**
@@ -104,3 +104,7 @@ expect <<EOF | tee -a "$LOG_FILE"
 EOF
 
 log_message "[+] Evilginx setup completed successfully inside tmux!"
+log_message "[+] You are now inside tmux. Type 'exit' when you're done."
+
+# **Keep tmux open**
+exec bash
