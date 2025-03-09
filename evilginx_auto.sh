@@ -104,8 +104,8 @@ expect <<EOF | tee -a "$LOG_FILE"
 EOF
 
 
-log_message "[+] Evilginx setup completed successfully inside tmux!"
-log_message "[+] You are now inside tmux. Type 'exit' when you're done."
+# log_message "[+] Evilginx setup completed successfully inside tmux!"
+# log_message "[+] You are now inside tmux. Type 'exit' when you're done."
 
 # **Keep tmux open**
 exec bash
