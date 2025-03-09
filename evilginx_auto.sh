@@ -45,7 +45,7 @@ log_message "[+] Starting Evilginx for the first time and exiting..."
 expect <<EOF | tee -a "$LOG_FILE"
     spawn ./evilginx2
     expect "evilginx2 >"
-    send "exit\r"
+    send "q\r"
     expect eof
 EOF
 
