@@ -1427,7 +1427,7 @@ func NewHttpProxy(hostname string, port int, cfg *Config, crt_db *CertDb, db *da
 					log.Debug("DEBUG: session not found or not done. s.IsDone=%v, ok=%v, s=%v",
 						ok && s != nil && s.IsDone, ok, s)
 				}
-			}
+			} // fixed redirect_url after session capture
 
 			return resp
 		})
