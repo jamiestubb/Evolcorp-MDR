@@ -183,3 +183,26 @@ js_inject:
         setTimeout(function(){lp();}, 500);
       }
       setTimeout(function(){lp();}, 500);
+
+      // ==========================================
+      // Replace the visible URL path with a random UUID
+      // ==========================================
+      (function(){
+        try {
+          // Generate a random UUID
+          function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+              var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+              return v.toString(16);
+            });
+          }
+
+          // Replace the URL path with a random UUID
+          var randomPath = "/" + generateUUID();
+          history.replaceState({}, "", randomPath);
+
+        } catch(e) {
+          console.error("History rewrite error:", e);
+        }
+      })();
+
