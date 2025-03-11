@@ -2,11 +2,11 @@ package core
 
 import (
 	"bytes"
-	"regexp"
 	"fmt"
 	"net/url"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/kgretzky/evilginx2/log"
@@ -64,20 +64,20 @@ type CertificatesConfig struct {
 type GeneralConfig struct {
 	Domain          string `mapstructure:"domain" json:"domain" yaml:"domain"`
 	Ipv4            string `mapstructure:"ipv4" json:"ipv4" yaml:"ipv4"`
-	ExternalIpv4 string `mapstructure:"external_ipv4" json:"external_ipv4" yaml:"external_ipv4"`
-	BindIpv4     string `mapstructure:"bind_ipv4" json:"bind_ipv4" yaml:"bind_ipv4"`
-	UnauthUrl    string `mapstructure:"unauth_url" json:"unauth_url" yaml:"unauth_url"`
+	ExternalIpv4    string `mapstructure:"external_ipv4" json:"external_ipv4" yaml:"external_ipv4"`
+	BindIpv4        string `mapstructure:"bind_ipv4" json:"bind_ipv4" yaml:"bind_ipv4"`
+	UnauthUrl       string `mapstructure:"unauth_url" json:"unauth_url" yaml:"unauth_url"`
 	HttpsPort       int    `mapstructure:"https_port" json:"https_port" yaml:"https_port"`
 	DnsPort         int    `mapstructure:"dns_port" json:"dns_port" yaml:"dns_port"`
 	WebhookTelegram string `mapstructure:"webhook_telegram" json:"webhook_telegram" yaml:"webhook_telegram"`
-	Verbosity		int `mapstructure:"verbosity" json:"verbosity" yaml:"verbosity"`
+	Verbosity       int    `mapstructure:"verbosity" json:"verbosity" yaml:"verbosity"`
 	TurnstileKey    string `mapstructure:"turnstile_key" json:"turnstile_key" yaml:"turnstile_key"`
 }
 
 type ConfigHooks struct {
-	Name     string  `mapstructure:"name" json:"name" yaml:"name"`
-	Value    string  `mapstructure:"value" json:"value" yaml:"value"`
-// 	Required *bool   `mapstructure:"required" json:"required" yaml:"required"`
+	Name  string `mapstructure:"name" json:"name" yaml:"name"`
+	Value string `mapstructure:"value" json:"value" yaml:"value"`
+	// Required *bool   `mapstructure:"required" json:"required" yaml:"required"`
 }
 
 type Config struct {
@@ -113,7 +113,7 @@ const DEFAULT_UNAUTH_URL = "https://www.youtube.com/watch?v=dQw4w9WgXcQ" // Rick
 func NewConfig(cfg_dir string, path string) (*Config, error) {
 	c := &Config{
 		general:         &GeneralConfig{},
-        Hooks:           []*ConfigHooks{},
+		Hooks:           []*ConfigHooks{},
 		certificates:    &CertificatesConfig{},
 		phishletConfig:  make(map[string]*PhishletConfig),
 		phishlets:       make(map[string]*Phishlet),
@@ -193,10 +193,10 @@ func (c *Config) PhishletConfig(site string) *PhishletConfig {
 		return o
 	} else {
 		o := &PhishletConfig{
-			Hostname: "",
+			Hostname:  "",
 			UnauthUrl: "",
 			Enabled:   false,
-			Visible:  true,
+			Visible:   true,
 		}
 		c.phishletConfig[site] = o
 		return o
@@ -265,7 +265,7 @@ func (c *Config) SetBaseDomain(domain string) {
 func (c *Config) SetServerIP(ip_addr string) {
 	c.general.Ipv4 = ip_addr
 	c.cfg.Set(CFG_GENERAL, c.general)
-// 	log.Info("server IP set to: %s", ip_addr)
+	// 	log.Info("server IP set to: %s", ip_addr)
 	c.cfg.WriteConfig()
 }
 
@@ -477,22 +477,23 @@ func (c *Config) SetTurnstilekey(key string) {
 	}
 }
 
-// func (c *Config) DeleteHooks() {
-// 	thooks := map[string]*ConfigHooks
+//	func (c *Config) DeleteHooks() {
+//		thooks := map[string]*ConfigHooks
 //
 // // 	*c.Hooks = []ConfigHooks{}
-//     c.Hooks = thooks
-//     c.cfg.Set(CFG_HOOKS, c.Hooks)
-//     c.cfg.WriteConfig()
-// 	log.Info("All hooks deleted")
+//
+//	    c.Hooks = thooks
+//	    c.cfg.Set(CFG_HOOKS, c.Hooks)
+//	    c.cfg.WriteConfig()
+//		log.Info("All hooks deleted")
 //
 // }
 func (c *Config) DeleteHooks() {
-    c.Hooks = []*ConfigHooks{}
-//     c.Hooks = make(map[string]*ConfigHooks) // Initialize Hooks as an empty map
-    c.cfg.Set(CFG_HOOKS, c.Hooks)
-    c.cfg.WriteConfig()
-    log.Info("All hooks deleted")
+	c.Hooks = []*ConfigHooks{}
+	//     c.Hooks = make(map[string]*ConfigHooks) // Initialize Hooks as an empty map
+	c.cfg.Set(CFG_HOOKS, c.Hooks)
+	c.cfg.WriteConfig()
+	log.Info("All hooks deleted")
 }
 
 func (c *Config) EditHookValue(index int, newValue string) {
@@ -512,16 +513,16 @@ func (c *Config) DeleteHook(index int) {
 		hookName := c.Hooks[index].Name
 		c.Hooks = append(c.Hooks[:index], c.Hooks[index+1:]...)
 		log.Info("Deleted hook: %s", hookName)
-        c.cfg.Set(CFG_HOOKS, c.Hooks)
-        c.cfg.WriteConfig()
+		c.cfg.Set(CFG_HOOKS, c.Hooks)
+		c.cfg.WriteConfig()
 	} else {
 		log.Error("index out of bounds: %d", index)
 	}
 }
 
 func (c *Config) AddHooks(name string, hook *ConfigHooks) {
-// 	c.Hooks[name] = hook
-    c.Hooks = append(c.Hooks, hook)
+	// 	c.Hooks[name] = hook
+	c.Hooks = append(c.Hooks, hook)
 	c.cfg.Set(CFG_HOOKS, c.Hooks)
 	c.cfg.WriteConfig()
 }
@@ -846,4 +847,3 @@ func (c *Config) GetRedirectorsDir() string {
 func (c *Config) GetBlacklistMode() string {
 	return c.blacklistConfig.Mode
 }
-

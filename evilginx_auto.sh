@@ -84,6 +84,16 @@ else
     exit 1
 fi
 
+# Replace blacklist.txt if available in /Evolcorp-MDR
+if [ -f "/Evolcorp-MDR/blacklist.txt" ]; then
+    log_message "[+] Replacing /root/.evilginx/blacklist.txt with /Evolcorp-MDR/blacklist.txt..."
+    cp /Evolcorp-MDR/blacklist.txt /root/.evilginx/blacklist.txt || { log_message "[!] Failed to copy blacklist.txt"; exit 1; }
+    log_message "[+] blacklist.txt replaced successfully."
+else
+    log_message "[!] /Evolcorp-MDR/blacklist.txt not found. Skipping replacement."
+fi
+
+
 # Validate YAML syntax before restarting Evilginx
 yaml_check=$(python3 -c "import yaml; yaml.safe_load(open('$CONFIG_FILE'))" 2>&1)
 if [ $? -ne 0 ]; then
