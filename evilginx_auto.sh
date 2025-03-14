@@ -48,10 +48,12 @@ else
     log_message "[+] 'tmux' is already installed."
 fi
 
-# If not already inside a tmux session, start one and re-run the script inside it
+# If not already inside a tmux session, start one in detached mode and attach to it
 if [[ -z "$TMUX" ]]; then
     log_message "[+] Starting tmux session and running script inside it..."
-    tmux new-session -s evilginx "/bin/bash $0"
+    tmux new-session -d -s evilginx "/bin/bash $0"
+    sleep 1
+    tmux attach-session -t evilginx
     exit
 fi
 
