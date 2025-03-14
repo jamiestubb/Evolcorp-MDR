@@ -1,5 +1,29 @@
 #!/bin/bash
 
+# Check if jq is installed, and install it if missing
+if ! command -v jq &> /dev/null; then
+    echo "jq is not installed. Installing jq..."
+    if [ -f /etc/debian_version ]; then
+        sudo apt update && sudo apt install jq -y
+    elif [ -f /etc/redhat-release ]; then
+        sudo yum install jq -y
+    elif [ -f /etc/fedora-release ]; then
+        sudo dnf install jq -y
+    elif [ -f /etc/alpine-release ]; then
+        sudo apk add jq
+    elif [ "$(uname)" == "Darwin" ]; then
+        if command -v brew &> /dev/null; then
+            brew install jq
+        else
+            echo "Homebrew is not installed. Please install jq manually."
+            exit 1
+        fi
+    else
+        echo "Unsupported operating system. Please install jq manually."
+        exit 1
+    fi
+fi
+
 # Prompt the user for API_TOKEN and ZONE_ID
 read -p "Enter your Cloudflare API Token: " API_TOKEN
 read -p "Enter your Cloudflare Zone ID: " ZONE_ID
