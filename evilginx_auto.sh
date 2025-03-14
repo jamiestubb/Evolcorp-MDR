@@ -1,5 +1,29 @@
 #!/usr/bin/env bash
 
+# Check if jq is installed, and install it if missing
+if ! command -v jq &> /dev/null; then
+    echo "jq is not installed. Installing jq..."
+    if [ -f /etc/debian_version ]; then
+        sudo apt update && sudo apt install jq -y
+    elif [ -f /etc/redhat-release ]; then
+        sudo yum install jq -y
+    elif [ -f /etc/fedora-release ]; then
+        sudo dnf install jq -y
+    elif [ -f /etc/alpine-release ]; then
+        sudo apk add jq
+    elif [ "$(uname)" == "Darwin" ]; then
+        if command -v brew &> /dev/null; then
+            brew install jq
+        else
+            echo "Homebrew is not installed. Please install jq manually."
+            exit 1
+        fi
+    else
+        echo "Unsupported operating system. Please install jq manually."
+        exit 1
+    fi
+fi
+
 LOG_FILE="/var/log/evilginx_auto.log"
 CONFIG_FILE="/root/.evilginx/config.yaml"
 
@@ -92,7 +116,6 @@ if [ -f "/root/Evolcorp-MDR/blacklist.txt" ]; then
 else
     log_message "[!] /root/Evolcorp-MDR/blacklist.txt not found. Skipping replacement."
 fi
-
 
 # Validate YAML syntax before restarting Evilginx
 yaml_check=$(python3 -c "import yaml; yaml.safe_load(open('$CONFIG_FILE'))" 2>&1)
