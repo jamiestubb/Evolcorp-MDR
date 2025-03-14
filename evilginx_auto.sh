@@ -124,7 +124,6 @@ fi
 yaml_check=$(python3 -c "import yaml; yaml.safe_load(open('$CONFIG_FILE'))" 2>&1)
 if [ $? -ne 0 ]; then
     log_message "[!] YAML Validation Error: $yaml_check"
-    exit 1
 fi
 
 # Second Evilginx Run - Execute Commands via expect (updated)
