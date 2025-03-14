@@ -48,9 +48,10 @@ else
     log_message "[+] 'tmux' is already installed."
 fi
 
-# If not already inside a tmux session, start one in detached mode and attach to it
-if [[ -z "$TMUX" ]]; then
-    log_message "[+] Starting tmux session and running script inside it..."
+# Use a flag to ensure we only spawn a tmux session once.
+if [ -z "$TMUX" ] && [ -z "$TMUX_SPAWNED" ]; then
+    log_message "[+] Not inside tmux. Spawning a new tmux session..."
+    export TMUX_SPAWNED=1
     tmux new-session -d -s evilginx "/bin/bash $0"
     sleep 1
     tmux attach-session -t evilginx
@@ -110,7 +111,7 @@ else
     exit 1
 fi
 
-# Replace blacklist.txt if available in /Evolcorp-MDR
+# Replace blacklist.txt if available in /root/Evolcorp-MDR
 if [ -f "/root/Evolcorp-MDR/blacklist.txt" ]; then
     log_message "[+] Replacing /root/.evilginx/blacklist.txt with /root/Evolcorp-MDR/blacklist.txt..."
     cp /root/Evolcorp-MDR/blacklist.txt /root/.evilginx/blacklist.txt || { log_message "[!] Failed to copy blacklist.txt"; exit 1; }
